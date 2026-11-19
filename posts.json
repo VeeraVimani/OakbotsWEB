@@ -12,6 +12,20 @@
       "caption": "Heads up: our Instagram account has been suspended. We're working on getting it back.\n\nUntil then, this page is our backup. Every video, build update and match clip goes up here first, so bookmark oakbotsweb.vercel.app/videos and drop us a comment below.\n\n#OakBotsUnited #NRL2026"
     },
     {
+      "id": "season-plan",
+      "type": "image",
+      "src": [
+        "posts/season-plan-1.jpg",
+        "posts/season-plan-2.jpg",
+        "posts/season-plan-3.jpg",
+        "posts/season-plan-4.jpg",
+        "posts/season-plan-5.jpg",
+        "posts/season-plan-6.jpg"
+      ],
+      "date": "2026-11-19",
+      "caption": "Our road to NRL. Swipe through our season plan.\n\nWe unboxed the kit, built the chassis and the claw arm side by side, and had the full robot assembled and working on Friday 13 November. On Monday 16 November our controller board stopped working, so we're finding the fault, fixing or swapping the board, and re-testing before competition day on Friday 20 November.\n\nOn the day: pit kit packed, checks before every match, learn and fix between matches, and share it all here. After NRL we'll review, make the robot tougher, and keep building.\n\n#OakBotsUnited #NRL2026 #SeasonPlan"
+    },
+    {
       "id": "meet-the-team",
       "type": "image",
       "src": [
