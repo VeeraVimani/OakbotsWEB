@@ -1,6 +1,17 @@
 {
   "posts": [
     {
+      "id": "instagram-suspended",
+      "type": "image",
+      "pinned": true,
+      "src": [
+        "posts/instagram-suspended-1.jpg",
+        "posts/instagram-suspended-2.jpg"
+      ],
+      "date": "2026-11-19",
+      "caption": "Heads up: our Instagram account has been suspended. We're working on getting it back.\n\nUntil then, this page is our backup. Every video, build update and match clip goes up here first, so bookmark oakbotsweb.vercel.app/videos and drop us a comment below.\n\n#OakBotsUnited #NRL2026"
+    },
+    {
       "id": "robot-kit-unboxing",
       "type": "video",
       "src": "posts/robot-kit-unboxing.mp4",
