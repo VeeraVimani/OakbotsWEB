@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>New post — OakBots United admin</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#070708;--fg:#ececea;--mute:#86868c;--line:rgba(255,255,255,.12);--acc:#f91176;--panel:#0f0f12}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--fg);font-family:Inter,system-ui,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:#a8c7ff}
+  .mono{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+  header{display:flex;justify-content:space-between;align-items:center;padding:16px clamp(16px,4vw,40px);border-bottom:1px solid var(--line)}
+  header .b{display:flex;gap:10px;align-items:center;font-family:Archivo;font-weight:700}
+  header img{height:34px}
+  main{max-width:1100px;margin:0 auto;padding:32px 16px 80px;display:grid;grid-template-columns:1fr 380px;gap:32px}
+  @media(max-width:900px){main{grid-template-columns:1fr}}
+  h1{font-family:Archivo;font-stretch:115%;font-weight:800;font-size:34px;letter-spacing:-.02em;margin:6px 0 20px}
+  label{display:block;font-size:13px;font-weight:600;margin:18px 0 6px}
+  input,textarea,select{width:100%;background:var(--panel);border:1px solid var(--line);color:var(--fg);border-radius:8px;padding:11px 12px;font:inherit;font-size:14.5px}
+  textarea{min-height:140px;resize:vertical}
+  .drop{border:1.5px dashed var(--line);border-radius:12px;padding:28px;text-align:center;cursor:pointer;background:var(--panel)}
+  .drop:hover{border-color:var(--acc)}
+  .hint{color:var(--mute);font-size:12.5px;margin-top:6px}
+  .warn{color:#ffb35c}
+  .btn{display:inline-flex;gap:8px;align-items:center;font-weight:600;font-size:14px;padding:11px 16px;border-radius:8px;background:#26262b;color:var(--fg);border:0;cursor:pointer;margin:8px 8px 0 0}
+  .btn.p{background:var(--acc);color:#fff}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .steps{margin-top:30px;border-top:1px solid var(--line);padding-top:20px}
+  .steps ol{padding-left:20px;color:#c9c9cd;font-size:14px}
+  .steps li{margin:8px 0}
+  code{font-family:"JetBrains Mono";font-size:12.5px;background:#1b1b20;padding:2px 6px;border-radius:4px}
+  pre{font-family:"JetBrains Mono";font-size:12px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto;max-height:220px;margin-top:8px;white-space:pre-wrap}
+  /* preview */
+  .pv{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden;position:sticky;top:20px}
+  .pv .top{display:flex;align-items:center;gap:10px;padding:12px 14px;font-weight:600;font-size:14px;border-bottom:1px solid var(--line)}
+  .pv .top span{width:30px;height:30px;border-radius:50%;background:var(--bg);display:grid;place-items:center;border:1px solid var(--line)}
+  .pv .top img{width:80%}
+  .pv .m{aspect-ratio:4/5;background:#000;display:grid;place-items:center;color:var(--mute);font-size:13px}
+  .pv .m video,.pv .m img{width:100%;height:100%;object-fit:cover}
+  .pv .c{padding:12px 14px;font-size:14px;white-space:pre-line;color:#d9d9dc}
+  .tag{color:#a8c7ff}
+</style>
+</head>
+<body>
+<header><div class="b"><img src="logo.png" alt="">OakBots United · Admin</div><a href="feed.html">View feed →</a></header>
+<main>
+  <section>
+    <span class="mono">Post composer</span>
+    <h1>New post</h1>
+
+    <div class="drop" id="drop">Click or drop a <b>video</b> or <b>photos</b> here<div class="hint">MP4 for video · JPG/PNG/WEBP for photos (pick several for a carousel)</div></div>
+    <input type="file" id="file" accept="video/mp4,image/*" multiple hidden>
+    <div class="hint" id="finfo"></div>
+
+    <label for="title">Short name for the post (used for the file name)</label>
+    <input id="title" placeholder="e.g. first-drive-test">
+
+    <label for="date">Date</label>
+    <input id="date" type="date">
+
+    <label for="cap">Caption</label>
+    <textarea id="cap" placeholder="What happened? Add #hashtags at the end."></textarea>
+
+    <div style="margin-top:20px">
+      <button class="btn p" id="gen" disabled>Create post files</button>
+    </div>
+    <div id="out" style="display:none">
+      <div class="hint" style="margin-top:14px">Download both, then upload them to GitHub (steps below).</div>
+      <button class="btn" id="dlMedia">⬇ Download media</button>
+      <button class="btn" id="dlJson">⬇ Download posts.json</button>
+      <pre id="json"></pre>
+    </div>
+
+    <div class="steps">
+      <span class="mono">How to publish</span>
+      <ol>
+        <li>Open your GitHub repository for the site.</li>
+        <li>Open the <code>posts</code> folder → <b>Add file → Upload files</b> → drop the downloaded media file(s) → <b>Commit changes</b>.</li>
+        <li>Go back to the main folder → <b>Add file → Upload files</b> → drop the new <code>posts.json</code> (it replaces the old one) → <b>Commit changes</b>.</li>
+        <li>Wait about 30 seconds — Vercel updates the site and the post appears on the <a href="feed.html">Feed</a>.</li>
+      </ol>
+      <p class="hint warn" style="margin-top:10px">GitHub's website only accepts files under 25 MB. Keep videos short (under ~60 s, 720p) or ask Claude to compress them first.</p>
+      <p class="hint">To delete or edit a post: open <code>posts.json</code> on GitHub, click the pencil icon, change or remove that post's block, and commit.</p>
+    </div>
+  </section>
+
+  <aside>
+    <span class="mono">Preview</span>
+    <div class="pv" style="margin-top:10px">
+      <div class="top"><span><img src="logo.png" alt=""></span>oakbots.united</div>
+      <div class="m" id="pm">No media yet</div>
+      <div class="c" id="pc"><b>oakbots.united</b> </div>
+    </div>
+  </aside>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let files=[];
+$("date").value=new Date().toISOString().slice(0,10);
+const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,48)||"post";
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function pick(list){
+  files=[...list].filter(f=>/^(video\/mp4|image\/)/.test(f.type));
+  if(files.some(f=>f.type==="video/mp4"))files=files.filter(f=>f.type==="video/mp4").slice(0,1);
+  const mb=files.reduce((a,f)=>a+f.size,0)/1048576;
+  $("finfo").innerHTML=files.length?`${files.length} file(s) · ${mb.toFixed(1)} MB`+(files.some(f=>f.size>25*1048576)?' · <span class="warn">over 25 MB — too big for GitHub upload</span>':""):"";
+  if(!$("title").value&&files[0])$("title").value=slug(files[0].name.replace(/\.[^.]+$/,""));
+  const u=files[0]&&URL.createObjectURL(files[0]);
+  $("pm").innerHTML=!files.length?"No media yet":files[0].type==="video/mp4"?`<video src="${u}" muted autoplay loop playsinline></video>`:`<img src="${u}" alt="">`;
+  upd();
+}
+function upd(){$("pc").innerHTML="<b>oakbots.united</b> "+esc($("cap").value).replace(/(#\w+)/g,'<span class="tag">$1</span>');$("gen").disabled=!files.length}
+$("drop").onclick=()=>$("file").click();
+$("file").onchange=e=>pick(e.target.files);
+$("drop").ondragover=e=>{e.preventDefault()};$("drop").ondrop=e=>{e.preventDefault();pick(e.dataTransfer.files)};
+$("cap").oninput=upd;
+function dl(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove()}
+let names=[],jsonText="";
+$("gen").onclick=async()=>{
+  const base=slug($("title").value||"post")+"-"+$("date").value.replace(/-/g,"");
+  const isVid=files[0].type==="video/mp4";
+  names=files.map((f,i)=>base+(files.length>1?"-"+(i+1):"")+(isVid?".mp4":"."+(f.name.split(".").pop().toLowerCase())));
+  let data={posts:[]};
+  try{data=await (await fetch("posts.json?v="+Date.now())).json()}catch(e){}
+  data.posts=(data.posts||[]).filter(p=>p.id!==base);
+  const post={id:base,type:isVid?"video":"image",src:isVid?"posts/"+names[0]:(names.length>1?names.map(n=>"posts/"+n):"posts/"+names[0]),date:$("date").value,caption:$("cap").value.trim()};
+  data.posts.unshift(post);
+  jsonText=JSON.stringify(data,null,2);
+  $("json").textContent=JSON.stringify(post,null,2);
+  $("out").style.display="block";
+};
+$("dlMedia").onclick=()=>files.forEach((f,i)=>setTimeout(()=>dl(f,names[i]),i*400));
+$("dlJson").onclick=()=>dl(new Blob([jsonText],{type:"application/json"}),"posts.json");
+</script>
+</body>
+</html>

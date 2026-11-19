@@ -1,0 +1,12 @@
+{
+  "posts": [
+    {
+      "id": "robot-kit-unboxing",
+      "type": "video",
+      "src": "posts/robot-kit-unboxing.mp4",
+      "thumb": "posts/robot-kit-unboxing.jpg",
+      "date": "2026-11-19",
+      "caption": "Day one with the NRL Robot Kit. We unboxed it together, sorted the parts and got our first look at the electronics. Unboxed. Now we build.\n\n#NRL2026 #OakBotsUnited #Robotics"
+    }
+  ]
+}
