@@ -12,6 +12,23 @@
       "caption": "Heads up: our Instagram account has been suspended. We're working on getting it back.\n\nUntil then, this page is our backup. Every video, build update and match clip goes up here first, so bookmark oakbotsweb.vercel.app/videos and drop us a comment below.\n\n#OakBotsUnited #NRL2026"
     },
     {
+      "id": "meet-the-team",
+      "type": "image",
+      "src": [
+        "posts/meet-the-team-1.jpg",
+        "posts/meet-the-team-2.jpg",
+        "posts/meet-the-team-3.jpg",
+        "posts/meet-the-team-4.jpg",
+        "posts/meet-the-team-5.jpg",
+        "posts/meet-the-team-6.jpg",
+        "posts/meet-the-team-7.jpg",
+        "posts/meet-the-team-8.jpg",
+        "posts/meet-the-team-9.jpg"
+      ],
+      "date": "2026-11-19",
+      "caption": "Meet the team behind the robot. Seven builders and one mentor, one machine. Swipe to meet everyone on OakBots United.\n\nCaptain: Vivaan Ayyar \u00b7 Robot Assembly\nSamarth Sharma \u00b7 Hardware & Research\nAvijit Senthilkumar \u00b7 Main Coder\nSmayan Desai \u00b7 All-Rounder\nAarav Sachin \u00b7 Co-Builder\nAditya Divya Vinod \u00b7 Documentation\nAarav Singh \u00b7 Innovator\nMentor: Moksha Muthappa\n\n#OakBotsUnited #NRL2026 #MeetTheTeam"
+    },
+    {
       "id": "robot-kit-unboxing",
       "type": "video",
       "src": "posts/robot-kit-unboxing.mp4",
