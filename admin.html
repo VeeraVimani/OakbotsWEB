@@ -53,6 +53,18 @@
   .crow{grid-template-columns:1fr auto}
   code{font-family:"JetBrains Mono";font-size:12.5px;background:#1b1b20;padding:2px 6px;border-radius:4px}
   .hidden{display:none!important}
+  .modes{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .modes .btn.on{background:var(--acc);color:#fff}
+  .ctabs{display:flex;gap:6px;margin:18px 0 12px;border-bottom:1px solid var(--line)}
+  .ctabs button{background:none;border:0;color:var(--mute);font:600 14px Inter;padding:10px 14px;border-bottom:2px solid transparent;cursor:pointer;margin-bottom:-1px}
+  .ctabs button.on{color:var(--fg);border-bottom-color:var(--acc)}
+  .ctabs b{background:var(--acc);color:#fff;border-radius:999px;padding:1px 8px;font-size:12px;margin-left:4px}
+  .flag{display:inline-block;background:rgba(255,179,92,.14);color:#ffb35c;border:1px solid rgba(255,179,92,.35);border-radius:999px;padding:1px 9px;font-size:12px;margin:4px 6px 0 0}
+  .acts2{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .btn.ok2{background:#1f7a46;color:#fff}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .chips span{background:#1b1b20;border:1px solid var(--line);border-radius:999px;padding:3px 6px 3px 12px;font-size:13px;display:inline-flex;gap:6px;align-items:center}
+  .chips button{background:none;border:0;color:var(--mute);cursor:pointer;font-size:15px;line-height:1}
 </style>
 </head>
 <body>
@@ -106,8 +118,29 @@
     <div class="list" id="plist"><p class="hint">Loading…</p></div>
     <p class="hint">Posts added the old way (in <code>posts.json</code>) don't show here.</p>
 
-    <h2>Latest comments</h2>
+    <h2>Comments</h2>
+    <div class="modes" id="modes">
+      <span class="hint" style="margin:0 8px 0 0">Comments:</span>
+      <button class="btn s" data-mode="auto">Auto-check</button>
+      <button class="btn s" data-mode="review">Approve everything first</button>
+      <button class="btn s" data-mode="off">Off</button>
+    </div>
+    <p class="hint" id="modehint"></p>
+    <div class="ctabs" id="ctabs">
+      <button class="on" data-s="pending">Needs review <b id="npend">0</b></button>
+      <button data-s="approved">Live</button>
+      <button data-s="blocked">Blocked</button>
+    </div>
     <div class="list" id="clist"><p class="hint">Loading…</p></div>
+    <p class="hint" id="modsetup"></p>
+
+    <h2>Banned words</h2>
+    <p class="hint" style="margin-top:-6px">Comments with these words (even spelled like b@d or b.a.d) go to <b>Needs review</b> instead of going live.</p>
+    <div style="display:flex;gap:8px;margin-top:10px"><input id="nw" placeholder="Add words, separated by commas"><button class="btn" id="addw">Add</button></div>
+    <div class="chips" id="words"></div>
+
+    <h2>Blocked devices</h2>
+    <div class="list" id="blist"></div>
   </div>
 </main>
 
@@ -132,7 +165,7 @@ $("login").addEventListener("submit",async e=>{
   enter();
 });
 $("out").onclick=async()=>{await SB.auth.signOut();location.reload()};
-function enter(){show("app");$("out").classList.remove("hidden");$("date").value=new Date().toISOString().slice(0,10);loadPosts();loadComments()}
+function enter(){show("app");$("out").classList.remove("hidden");$("date").value=new Date().toISOString().slice(0,10);loadPosts();loadComments();loadMode();loadWords();loadBlocked()}
 
 // composer
 let files=[];
@@ -186,14 +219,38 @@ async function loadPosts(){
     await SB.from("comments").delete().eq("post_id",p.id);loadPosts();loadComments();
   });
 }
+let CTAB="pending";
+document.querySelectorAll("#ctabs button").forEach(b=>b.onclick=()=>{CTAB=b.dataset.s;document.querySelectorAll("#ctabs button").forEach(x=>x.classList.toggle("on",x===b));loadComments()});
+document.querySelectorAll("#modes [data-mode]").forEach(b=>b.onclick=async()=>{const {error}=await SB.from("settings").upsert({key:"comments_mode",value:b.dataset.mode});if(error){$("modehint").innerHTML='<span class="err">'+esc(error.message)+'</span>';return}loadMode()});
+const MODEHINT={auto:"New comments go live straight away unless they trip a check (bad words, reused name, links, posting too fast). Those wait here for you.",review:"Every new comment waits here until you approve it.",off:"Nobody can post new comments. Existing approved comments still show."};
+async function loadMode(){const {data,error}=await SB.from("settings").select("value").eq("key","comments_mode").maybeSingle();
+  if(error){$("modsetup").innerHTML='<span class="warn">Moderation isn\'t set up yet — run moderation.sql in Supabase.</span>';return}
+  const m=data?data.value:"auto";document.querySelectorAll("#modes [data-mode]").forEach(b=>b.classList.toggle("on",b.dataset.mode===m));$("modehint").textContent=MODEHINT[m]||""}
+const short=s=>s?String(s).slice(0,6):"—";
 async function loadComments(){
-  const {data,error}=await SB.from("comments").select("*").order("created_at",{ascending:false}).limit(50);
+  const cnt=await SB.from("comments").select("id",{count:"exact",head:true}).eq("status","pending");$("npend").textContent=cnt.count||0;
+  const {data,error}=await SB.from("comments").select("*").eq("status",CTAB).order("created_at",{ascending:false}).limit(100);
   if(error){$("clist").innerHTML='<p class="hint err">'+esc(error.message)+'</p>';return}
-  $("clist").innerHTML=(data||[]).map(c=>`<div class="row crow"><div class="t"><div><b>${esc(c.name)}</b> <span class="hint">· ${new Date(c.created_at).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</span></div><div style="white-space:normal">${esc(c.body)}</div></div><button class="btn s" data-cdel="${c.id}">Delete</button></div>`).join("")||'<p class="hint">No comments yet.</p>';
+  $("clist").innerHTML=(data||[]).map(c=>`<div class="row crow"><div class="t"><div><b>${esc(c.name)}</b> <span class="hint">· ${new Date(c.created_at).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})} · post: ${esc(String(c.post_id).slice(0,24))} · device ${esc(short(c.device_id))} · network ${esc(short(c.ip_hash))}</span></div><div style="white-space:normal;margin-top:2px">${esc(c.body)}</div><div>${(c.flags||[]).map(f=>`<span class="flag">${esc(f)}</span>`).join("")}</div></div>
+    <div class="acts2">${c.status!=="approved"?`<button class="btn s ok2" data-ap="${c.id}">Approve</button>`:""}<button class="btn s" data-cdel="${c.id}">Delete</button>${c.status!=="blocked"&&(c.device_id||c.ip_hash)?`<button class="btn s" data-blk="${c.id}">Block</button>`:""}</div></div>`).join("")||`<p class="hint">${CTAB==="pending"?"Nothing waiting for review.":"No comments here."}</p>`;
+  $("clist").querySelectorAll("[data-ap]").forEach(b=>b.onclick=async()=>{await SB.from("comments").update({status:"approved"}).eq("id",b.dataset.ap);loadComments()});
   $("clist").querySelectorAll("[data-cdel]").forEach(b=>b.onclick=async()=>{if(!confirmDel(b))return;await SB.from("comments").delete().eq("id",b.dataset.cdel);loadComments()});
+  $("clist").querySelectorAll("[data-blk]").forEach(b=>b.onclick=async()=>{if(!confirmDel(b,"Block?"))return;const c=data.find(x=>x.id===b.dataset.blk);
+    const rows=[];if(c.device_id)rows.push({kind:"device",value:c.device_id,note:c.name});if(c.ip_hash)rows.push({kind:"ip",value:c.ip_hash,note:c.name});
+    await SB.from("blocked").upsert(rows,{onConflict:"kind,value"});
+    if(c.device_id)await SB.from("comments").update({status:"blocked"}).eq("device_id",c.device_id);
+    if(c.ip_hash)await SB.from("comments").update({status:"blocked"}).eq("ip_hash",c.ip_hash);
+    loadComments();loadBlocked()});
 }
+async function loadWords(){const {data,error}=await SB.from("bad_words").select("word").order("word");if(error){$("words").innerHTML="";return}
+  $("words").innerHTML=(data||[]).map(w=>`<span>${esc(w.word)}<button data-w="${esc(w.word)}" aria-label="Remove">×</button></span>`).join("");
+  $("words").querySelectorAll("[data-w]").forEach(b=>b.onclick=async()=>{await SB.from("bad_words").delete().eq("word",b.dataset.w);loadWords()})}
+$("addw").onclick=async()=>{const ws=$("nw").value.split(",").map(w=>w.trim().toLowerCase()).filter(Boolean);if(!ws.length)return;await SB.from("bad_words").upsert(ws.map(word=>({word})),{onConflict:"word",ignoreDuplicates:true});$("nw").value="";loadWords()};
+async function loadBlocked(){const {data,error}=await SB.from("blocked").select("*").order("created_at",{ascending:false});if(error){$("blist").innerHTML="";return}
+  $("blist").innerHTML=(data||[]).map(r=>`<div class="row crow"><div class="t">${r.kind==="device"?"Device":"Network"} ${esc(short(r.value))} <span class="hint">· from comment by ${esc(r.note||"?")}</span></div><button class="btn s" data-ub="${r.id}">Unblock</button></div>`).join("")||'<p class="hint">Nobody blocked.</p>';
+  $("blist").querySelectorAll("[data-ub]").forEach(b=>b.onclick=async()=>{await SB.from("blocked").delete().eq("id",b.dataset.ub);loadBlocked()})}
 // two-click delete (no browser pop-ups)
-function confirmDel(b){if(b.dataset.armed){return true}b.dataset.armed=1;b.textContent="Sure?";b.classList.add("p");setTimeout(()=>{delete b.dataset.armed;b.textContent="Delete";b.classList.remove("p")},3000);return false}
+function confirmDel(b,q){if(b.dataset.armed){return true}const t=b.textContent;b.dataset.armed=1;b.textContent=q||"Sure?";b.classList.add("p");setTimeout(()=>{delete b.dataset.armed;b.textContent=t;b.classList.remove("p")},3000);return false}
 </script>
 </body>
 </html>

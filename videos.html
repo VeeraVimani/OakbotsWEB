@@ -229,13 +229,17 @@ document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.que
 async function loadComments(id){
   const box=$("cmts");if(!box)return;
   if(!SB){$("cform").style.display="none";return}
-  $("cform").style.display="";
+  $("cform").style.display=MODE==="off"?"none":"";
+  if(MODE==="off")box.insertAdjacentHTML("afterend",'<div class="cm" style="margin-top:12px"><small>Comments are turned off right now.</small></div>');
   const {data,error}=await SB.from("comments").select("name,body,created_at").eq("post_id",id).order("created_at",{ascending:true}).limit(200);
   if(SHOWN[cur]?.id!==id)return;
   if(error){box.innerHTML='<div class="cm"><small>Comments couldn\'t load.</small></div>';return}
   box.innerHTML=(data||[]).map(c=>`<div class="cm"><b>${esc(c.name)}</b>${esc(c.body)}<small>${new Date(c.created_at).toLocaleDateString("en-GB",{day:"numeric",month:"short"})}</small></div>`).join("")||'<div class="cm"><small>No comments yet. Be the first.</small></div>';
 }
 try{$("cname").value=localStorage.getItem("oak:name")||""}catch(e){}
+let MODE="auto";
+const DEV=(()=>{try{let d=localStorage.getItem("oak:dev");if(!d){d=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)+Date.now());localStorage.setItem("oak:dev",d)}return d}catch(e){return "nostore-"+String(Math.random()).slice(2)}})();
+if(SB)SB.from("settings").select("value").eq("key","comments_mode").maybeSingle().then(({data})=>{if(data)MODE=data.value}).catch(()=>{});
 $("cform").addEventListener("submit",async e=>{
   e.preventDefault();if(!SB)return;
   const name=$("cname").value.trim(),body=$("cbody").value.trim(),p=SHOWN[cur];
@@ -243,11 +247,13 @@ $("cform").addEventListener("submit",async e=>{
   if(!name){$("cmsg").textContent="Please add your name.";$("cname").focus();return}
   if(!body){$("cmsg").textContent="Write a comment first.";return}
   $("csend").disabled=true;$("cmsg").textContent="Posting…";
-  const {error}=await SB.from("comments").insert({post_id:p.id,name:name.slice(0,40),body:body.slice(0,500)});
+  const {data,error}=await SB.rpc("post_comment",{p_post_id:p.id,p_name:name.slice(0,40),p_body:body.slice(0,500),p_device:DEV});
   $("csend").disabled=false;
-  if(error){$("cmsg").textContent="Couldn't post. Try again.";return}
+  if(error){$("cmsg").textContent=/turned off/i.test(error.message)?"Comments are turned off right now.":"Couldn't post. Try again.";return}
   try{localStorage.setItem("oak:name",name)}catch(e){}
-  $("cbody").value="";$("cmsg").textContent="Posted!";loadComments(p.id);
+  $("cbody").value="";
+  if(data==="approved"){$("cmsg").textContent="Posted!";loadComments(p.id)}
+  else $("cmsg").textContent="Thanks! Your comment will show after the team checks it.";
 });
 async function loadPosts(){
   let list=[];
